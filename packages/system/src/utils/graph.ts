@@ -30,21 +30,21 @@ import {
 import { errorMessages } from '../constants';
 
 /**
- * Test whether an object is useable as an Edge
+ * 测试一个对象是否可用作Edge
  * @public
- * @remarks In TypeScript this is a type guard that will narrow the type of whatever you pass in to Edge if it returns true
- * @param element - The element to test
- * @returns A boolean indicating whether the element is an Edge
+ * @remarks 在TypeScript中，这是一个类型保护，如果返回true，它将把传入的元素类型缩小为Edge
+ * @param element - 要测试的元素
+ * @returns 一个布尔值，指示元素是否为Edge
  */
 export const isEdgeBase = <EdgeType extends EdgeBase = EdgeBase>(element: any): element is EdgeType =>
   'id' in element && 'source' in element && 'target' in element;
 
 /**
- * Test whether an object is useable as a Node
+ * 测试一个对象是否可用作Node
  * @public
- * @remarks In TypeScript this is a type guard that will narrow the type of whatever you pass in to Node if it returns true
- * @param element - The element to test
- * @returns A boolean indicating whether the element is an Node
+ * @remarks 在TypeScript中，这是一个类型保护，如果返回true，它将把传入的元素类型缩小为Node
+ * @param element - 要测试的元素
+ * @returns 一个布尔值，指示元素是否为Node
  */
 export const isNodeBase = <NodeType extends NodeBase = NodeBase>(element: any): element is NodeType =>
   'id' in element && 'position' in element && !('source' in element) && !('target' in element);
@@ -54,13 +54,12 @@ export const isInternalNodeBase = <NodeType extends InternalNodeBase = InternalN
 ): element is NodeType => 'id' in element && 'internals' in element && !('source' in element) && !('target' in element);
 
 /**
- * This util is used to tell you what nodes, if any, are connected to the given node
- * as the _target_ of an edge.
+ * 此工具用于告诉你哪些节点（如果有的话）作为边的_目标_连接到给定节点。
  * @public
- * @param node - The node to get the connected nodes from
- * @param nodes - The array of all nodes
- * @param edges - The array of all edges
- * @returns An array of nodes that are connected over eges where the source is the given node
+ * @param node - 要获取连接节点的节点
+ * @param nodes - 所有节点的数组
+ * @param edges - 所有边的数组
+ * @returns 通过边连接的节点数组，其中源是给定节点
  *
  * @example
  * ```ts
@@ -96,13 +95,12 @@ export const getOutgoers = <NodeType extends NodeBase = NodeBase, EdgeType exten
 };
 
 /**
- * This util is used to tell you what nodes, if any, are connected to the given node
- * as the _source_ of an edge.
+ * 此工具用于告诉你哪些节点（如果有的话）作为边的_源_连接到给定节点。
  * @public
- * @param node - The node to get the connected nodes from
- * @param nodes - The array of all nodes
- * @param edges - The array of all edges
- * @returns An array of nodes that are connected over eges where the target is the given node
+ * @param node - 要获取连接节点的节点
+ * @param nodes - 所有节点的数组
+ * @param edges - 所有边的数组
+ * @returns 通过边连接的节点数组，其中目标是给定节点
  *
  * @example
  * ```ts
@@ -154,16 +152,15 @@ export type GetNodesBoundsParams<NodeType extends NodeBase = NodeBase> = {
 };
 
 /**
- * Returns the bounding box that contains all the given nodes in an array. This can
- * be useful when combined with [`getViewportForBounds`](/api-reference/utils/get-viewport-for-bounds)
- * to calculate the correct transform to fit the given nodes in a viewport.
+ * 返回包含数组中所有给定节点的边界框。当与[`getViewportForBounds`](/api-reference/utils/get-viewport-for-bounds)
+ * 结合使用时，这对于计算正确的变换以使给定节点适合视口非常有用。
  * @public
- * @remarks Useful when combined with {@link getViewportForBounds} to calculate the correct transform to fit the given nodes in a viewport.
- * @param nodes - Nodes to calculate the bounds for
- * @param params.nodeOrigin - Origin of the nodes: [0, 0] - top left, [0.5, 0.5] - center
- * @returns Bounding box enclosing all nodes
+ * @remarks 与{@link getViewportForBounds}结合使用时有用，可以计算正确的变换以使给定节点适合视口。
+ * @param nodes - 要计算边界的节点
+ * @param params.nodeOrigin - 节点的原点：[0, 0] - 左上角，[0.5, 0.5] - 中心
+ * @returns 包围所有节点的边界框
  *
- * @remarks This function was previously called `getRectOfNodes`
+ * @remarks 此函数以前被称为`getRectOfNodes`
  *
  * @example
  * ```js
@@ -231,7 +228,7 @@ export type GetInternalNodesBoundsParams<NodeType> = {
 };
 
 /**
- * Determines a bounding box that contains all given nodes in an array
+ * 确定包含数组中所有给定节点的边界框
  * @internal
  */
 export const getInternalNodesBounds = <NodeType extends InternalNodeBase | NodeDragItem>(
@@ -259,7 +256,7 @@ export const getNodesInside = <NodeType extends NodeBase = NodeBase>(
   rect: Rect,
   [tx, ty, tScale]: Transform = [0, 0, 1],
   partially = false,
-  // set excludeNonSelectableNodes if you want to pay attention to the nodes "selectable" attribute
+  // 如果你想关注节点的"selectable"属性，请设置excludeNonSelectableNodes
   excludeNonSelectableNodes = false
 ): InternalNodeBase<NodeType>[] => {
   const paneRect = {
@@ -296,12 +293,11 @@ export const getNodesInside = <NodeType extends NodeBase = NodeBase>(
 };
 
 /**
- * This utility filters an array of edges, keeping only those where either the source or target
- * node is present in the given array of nodes.
+ * 此工具过滤边的数组，只保留源节点或目标节点存在于给定节点数组中的边。
  * @public
- * @param nodes - Nodes you want to get the connected edges for
- * @param edges - All edges
- * @returns Array of edges that connect any of the given nodes with each other
+ * @param nodes - 你想获取连接边的节点
+ * @param edges - 所有边
+ * @returns 连接任何给定节点与其他节点的边的数组
  *
  * @example
  * ```js
@@ -376,7 +372,7 @@ export async function fitView<Params extends FitViewParamsBase<NodeBase>, Option
 }
 
 /**
- * This function calculates the next position of a node, taking into account the node's extent, parent node, and origin.
+ * 此函数计算节点的下一个位置，考虑节点的范围、父节点和原点。
  *
  * @internal
  * @returns position, positionAbsolute
@@ -442,14 +438,14 @@ export function calculateNodePosition<NodeType extends NodeBase>({
 }
 
 /**
- * Pass in nodes & edges to delete, get arrays of nodes and edges that actually can be deleted
+ * 传入要删除的节点和边，获取实际可以删除的节点和边数组
  * @internal
- * @param param.nodesToRemove - The nodes to remove
- * @param param.edgesToRemove - The edges to remove
- * @param param.nodes - All nodes
- * @param param.edges - All edges
- * @param param.onBeforeDelete - Callback to check which nodes and edges can be deleted
- * @returns nodes: nodes that can be deleted, edges: edges that can be deleted
+ * @param param.nodesToRemove - 要移除的节点
+ * @param param.edgesToRemove - 要移除的边
+ * @param param.nodes - 所有节点
+ * @param param.edges - 所有边
+ * @param param.onBeforeDelete - 检查哪些节点和边可以删除的回调
+ * @returns nodes: 可以删除的节点, edges: 可以删除的边
  */
 export async function getElementsToRemove<NodeType extends NodeBase = NodeBase, EdgeType extends EdgeBase = EdgeBase>({
   nodesToRemove = [],

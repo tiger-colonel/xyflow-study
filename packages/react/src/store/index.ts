@@ -48,12 +48,11 @@ const createStore = ({
       setNodes: (nodes: Node[]) => {
         const { nodeLookup, parentLookup, nodeOrigin, elevateNodesOnSelect } = get();
         /*
-         * setNodes() is called exclusively in response to user actions:
-         * - either when the `<ReactFlow nodes>` prop is updated in the controlled ReactFlow setup,
-         * - or when the user calls something like `reactFlowInstance.setNodes()` in an uncontrolled ReactFlow setup.
+         * setNodes() 仅在响应用户操作时被调用：
+         * - 要么是在受控 ReactFlow 设置中更新 `<ReactFlow nodes>` 属性时
+         * - 要么是在非受控 ReactFlow 设置中用户调用类似 `reactFlowInstance.setNodes()` 的方法时
          *
-         * When this happens, we take the note objects passed by the user and extend them with fields
-         * relevant for internal React Flow operations.
+         * 当这种情况发生时，我们会采用用户传递的节点对象，并用与 React Flow 内部操作相关的字段扩展它们。
          */
         adoptUserNodes(nodes, nodeLookup, parentLookup, {
           nodeOrigin,
@@ -84,9 +83,8 @@ const createStore = ({
         }
       },
       /*
-       * Every node gets registerd at a ResizeObserver. Whenever a node
-       * changes its dimensions, this function is called to measure the
-       * new dimensions and update the nodes.
+       * 每个节点都会在 ResizeObserver 中注册。当节点改变其尺寸时，
+       * 此函数会被调用以测量新尺寸并更新节点。
        */
       updateNodeInternals: (updates, params = { triggerFitView: true }) => {
         const {
@@ -119,7 +117,7 @@ const createStore = ({
         updateAbsolutePositions(nodeLookup, parentLookup, { nodeOrigin, nodeExtent });
 
         if (params.triggerFitView) {
-          // we call fitView once initially after all dimensions are set
+          // 我们在所有尺寸设置完成后初始化时调用一次 fitView
           let nextFitViewDone = fitViewDone;
 
           if (!fitViewDone && fitViewOnInit) {
@@ -130,15 +128,13 @@ const createStore = ({
           }
 
           /*
-           * here we are cirmumventing the onNodesChange handler
-           * in order to be able to display nodes even if the user
-           * has not provided an onNodesChange handler.
-           * Nodes are only rendered if they have a width and height
-           * attribute which they get from this handler.
+           * 这里我们绕过了 onNodesChange 处理程序，
+           * 以便能够显示节点，即使用户没有提供 onNodesChange 处理程序。
+           * 节点只有在具有宽度和高度属性时才会被渲染，而这些属性正是从此处理程序中获取的。
            */
           set({ fitViewDone: nextFitViewDone });
         } else {
-          // we always want to trigger useStore calls whenever updateNodeInternals is called
+          // 我们希望在调用 updateNodeInternals 时始终触发 useStore 调用
           set({});
         }
 
@@ -155,7 +151,7 @@ const createStore = ({
         const { nodeLookup, triggerNodeChanges } = get();
 
         for (const [id, dragItem] of nodeDragItems) {
-          // we are using the nodelookup to be sure to use the current expandParent and parentId value
+          // 我们使用 nodeLookup 来确保使用当前的 expandParent 和 parentId 值
           const node = nodeLookup.get(id);
           const expandParent = !!(node?.expandParent && node?.parentId && dragItem?.position);
 
@@ -258,8 +254,8 @@ const createStore = ({
           const internalNode = nodeLookup.get(n.id);
           if (internalNode) {
             /*
-             * we need to unselect the internal node that was selected previously before we
-             * send the change to the user to prevent it to be selected while dragging the new node
+             * 在向用户发送更改之前，我们需要取消选择之前已选择的内部节点，
+             * 以防止在拖动新节点时它仍然被选中
              */
             internalNode.selected = false;
           }
@@ -354,8 +350,8 @@ const createStore = ({
         );
       },
       /*
-       * we can't call an asnychronous function in updateNodeInternals
-       * for that we created this sync version of fitView
+       * 我们不能在 updateNodeInternals 中调用异步函数，
+       * 因此我们创建了这个 fitView 的同步版本
        */
       fitViewSync: (options?: FitViewOptions): boolean => {
         const { panZoom, width, height, minZoom, maxZoom, nodeLookup } = get();

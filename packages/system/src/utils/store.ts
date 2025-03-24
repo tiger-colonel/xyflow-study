@@ -46,7 +46,7 @@ function mergeObjects<T extends Record<string, unknown>>(base: T, incoming?: Par
   const result = { ...base };
   for (const key in incoming) {
     if (incoming[key] !== undefined) {
-      // typecast is safe here, because we check for undefined
+      // 这里的类型转换是安全的，因为我们检查了undefined
       result[key] = (incoming as T)[key]!;
     }
   }
@@ -113,7 +113,7 @@ export function adoptUserNodes<NodeType extends NodeBase>(
         },
         internals: {
           positionAbsolute: clampedPosition,
-          // if user re-initializes the node or removes `measured` for whatever reason, we reset the handleBounds so that the node gets re-measured
+          // 如果用户重新初始化节点或者由于某种原因移除了`measured`，我们重置handleBounds，以便节点被重新测量
           handleBounds: !userNode.measured ? undefined : internalNode?.internals.handleBounds,
           z: calculateZ(userNode, selectedNodeZ),
           userNode,
@@ -147,7 +147,7 @@ function updateParentLookup<NodeType extends NodeBase>(
 }
 
 /**
- * Updates positionAbsolute and zIndex of a child node and the parentLookup.
+ * 更新子节点的positionAbsolute和zIndex以及parentLookup。
  */
 function updateChildNode<NodeType extends NodeBase>(
   node: InternalNodeBase<NodeType>,
@@ -160,9 +160,7 @@ function updateChildNode<NodeType extends NodeBase>(
   const parentNode = nodeLookup.get(parentId);
 
   if (!parentNode) {
-    console.warn(
-      `Parent node ${parentId} not found. Please make sure that parent nodes are in front of their child nodes in the nodes array.`
-    );
+    console.warn(`父节点 ${parentId} 未找到。请确保父节点在节点数组中位于其子节点之前。`);
     return;
   }
 
@@ -174,7 +172,7 @@ function updateChildNode<NodeType extends NodeBase>(
   const positionChanged = x !== positionAbsolute.x || y !== positionAbsolute.y;
 
   if (positionChanged || z !== node.internals.z) {
-    // we create a new object to mark the node as updated
+    // 我们创建一个新对象来标记节点已更新
     nodeLookup.set(node.id, {
       ...node,
       internals: {
@@ -233,7 +231,7 @@ export function handleExpandParent(
   const changes: (NodeDimensionChange | NodePositionChange)[] = [];
   const parentExpansions = new Map<string, { expandedRect: Rect; parent: InternalNodeBase }>();
 
-  // determine the expanded rectangle the child nodes would take for each parent
+  // 确定每个父节点的子节点会占用的扩展矩形
   for (const child of children) {
     const parent = nodeLookup.get(child.parentId);
     if (!parent) {
@@ -248,12 +246,12 @@ export function handleExpandParent(
 
   if (parentExpansions.size > 0) {
     parentExpansions.forEach(({ expandedRect, parent }, parentId) => {
-      // determine the position & dimensions of the parent
+      // 确定父节点的位置和尺寸
       const positionAbsolute = parent.internals.positionAbsolute;
       const dimensions = getNodeDimensions(parent);
       const origin = parent.origin ?? nodeOrigin;
 
-      // determine how much the parent expands in width and position
+      // 确定父节点在宽度和位置上的扩展量
       const xChange =
         expandedRect.x < positionAbsolute.x ? Math.round(Math.abs(positionAbsolute.x - expandedRect.x)) : 0;
       const yChange =
@@ -265,7 +263,7 @@ export function handleExpandParent(
       const widthChange = (newWidth - dimensions.width) * origin[0];
       const heightChange = (newHeight - dimensions.height) * origin[1];
 
-      // We need to correct the position of the parent node if the origin is not [0,0]
+      // 如果原点不是[0,0]，我们需要修正父节点的位置
       if (xChange > 0 || yChange > 0 || widthChange || heightChange) {
         changes.push({
           id: parentId,
@@ -277,8 +275,8 @@ export function handleExpandParent(
         });
 
         /*
-         * We move all child nodes in the oppsite direction
-         * so the x,y changes of the parent do not move the children
+         * 我们将所有子节点向相反方向移动
+         * 这样父节点的x,y变化不会移动子节点
          */
         parentLookup.get(parentId)?.forEach((childNode) => {
           if (!children.some((child) => child.id === childNode.id)) {
@@ -294,7 +292,7 @@ export function handleExpandParent(
         });
       }
 
-      // We need to correct the dimensions of the parent node if the origin is not [0,0]
+      // 如果原点不是[0,0]，我们需要修正父节点的尺寸
       if (dimensions.width < expandedRect.width || dimensions.height < expandedRect.height || xChange || yChange) {
         changes.push({
           id: parentId,
@@ -330,7 +328,7 @@ export function updateNodeInternals<NodeType extends InternalNodeBase>(
   const changes: (NodeDimensionChange | NodePositionChange)[] = [];
   const style = window.getComputedStyle(viewportNode);
   const { m22: zoom } = new window.DOMMatrixReadOnly(style.transform);
-  // in this array we collect nodes, that might trigger changes (like expanding parent)
+  // 在这个数组中，我们收集可能触发变化的节点（比如扩展父节点）
   const parentExpandChildren: ParentExpandChild[] = [];
 
   for (const update of updates.values()) {
@@ -457,14 +455,14 @@ export async function panBy({
 }
 
 /**
- * this function adds the connection to the connectionLookup
- * at the following keys: nodeId-type-handleId, nodeId-type and nodeId
- * @param type type of the connection
- * @param connection connection that should be added to the lookup
- * @param connectionKey at which key the connection should be added
- * @param connectionLookup reference to the connection lookup
- * @param nodeId nodeId of the connection
- * @param handleId handleId of the conneciton
+ * 此函数将连接添加到connectionLookup中
+ * 添加到以下键: nodeId-type-handleId, nodeId-type 和 nodeId
+ * @param type 连接类型
+ * @param connection 需要添加到查找表的连接
+ * @param connectionKey 连接应该添加到的键
+ * @param connectionLookup 连接查找表的引用
+ * @param nodeId 连接的节点ID
+ * @param handleId 连接的句柄ID
  */
 function addConnectionToLookup(
   type: 'source' | 'target',
@@ -475,9 +473,9 @@ function addConnectionToLookup(
   handleId: string | null
 ) {
   /*
-   * We add the connection to the connectionLookup at the following keys
+   * 我们将连接添加到connectionLookup的以下键中：
    * 1. nodeId, 2. nodeId-type, 3. nodeId-type-handleId
-   * If the key already exists, we add the connection to the existing map
+   * 如果键已存在，我们将连接添加到现有的映射中
    */
   let key = nodeId;
   const nodeMap = connectionLookup.get(key) || new Map();
