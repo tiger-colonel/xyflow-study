@@ -1,7 +1,6 @@
 /**
- * While [`PanelPosition`](/api-reference/types/panel-position) can be used to place a
- * component in the corners of a container, the `Position` enum is less precise and used
- * primarily in relation to edges and handles.
+ * 虽然 [`PanelPosition`](/api-reference/types/panel-position) 可以用于将组件
+ * 放置在容器的角落，但 `Position` 枚举的精确度较低，主要用于边缘和连接点的相关场景。
  *
  * @public
  */
@@ -20,7 +19,7 @@ export const oppositePosition = {
 };
 
 /**
- * All positions are stored in an object with x and y coordinates.
+ * 所有位置都存储在具有 x 和 y 坐标的对象中。
  *
  * @public
  */
@@ -46,13 +45,12 @@ export type Box = XYPosition & {
 export type Transform = [number, number, number];
 
 /**
- * A coordinate extent represents two points in a coordinate system: one in the top
- * left corner and one in the bottom right corner. It is used to represent the
- * bounds of nodes in the flow or the bounds of the viewport.
+ * 坐标范围表示坐标系中的两个点：一个在左上角，一个在右下角。它用于表示
+ * 流程中节点的边界或视口的边界。
  *
  * @public
  *
- * @remarks Props that expect a `CoordinateExtent` usually default to `[[-∞, -∞], [+∞, +∞]]`
- * to represent an unbounded extent.
+ * @remarks 需要 `CoordinateExtent` 的属性通常默认为 `[[-∞, -∞], [+∞, +∞]]`，
+ * 表示无边界的范围。
  */
 export type CoordinateExtent = [[number, number], [number, number]];

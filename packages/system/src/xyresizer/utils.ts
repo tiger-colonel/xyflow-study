@@ -1,25 +1,26 @@
-import { CoordinateExtent, NodeOrigin } from '../types';
-import { getPointerPosition } from '../utils';
-import { ControlPosition } from './types';
+import { CoordinateExtent, NodeOrigin } from '../types'; // 导入坐标范围和节点原点类型
+import { getPointerPosition } from '../utils'; // 导入获取指针位置的工具函数
+import { ControlPosition } from './types'; // 导入控制位置类型
 
 type GetResizeDirectionParams = {
-  width: number;
-  prevWidth: number;
-  height: number;
-  prevHeight: number;
-  affectsX: boolean;
-  affectsY: boolean;
+  // 获取调整大小方向的参数类型
+  width: number; // 宽度
+  prevWidth: number; // 前一个宽度
+  height: number; // 高度
+  prevHeight: number; // 前一个高度
+  affectsX: boolean; // 是否影响X轴
+  affectsY: boolean; // 是否影响Y轴
 };
 
 /**
- * Get all connecting edges for a given set of nodes
- * @param width - new width of the node
- * @param prevWidth - previous width of the node
- * @param height - new height of the node
- * @param prevHeight - previous height of the node
- * @param affectsX - whether to invert the resize direction for the x axis
- * @param affectsY - whether to invert the resize direction for the y axis
- * @returns array of two numbers representing the direction of the resize for each axis, 0 = no change, 1 = increase, -1 = decrease
+ * 获取给定节点集的所有连接边
+ * @param width - 节点的新宽度
+ * @param prevWidth - 节点的前一个宽度
+ * @param height - 节点的新高度
+ * @param prevHeight - 节点的前一个高度
+ * @param affectsX - 是否对X轴的调整方向进行反转
+ * @param affectsY - 是否对Y轴的调整方向进行反转
+ * @returns 表示每个轴的调整方向的两个数字的数组，0=无变化，1=增加，-1=减少
  */
 export function getResizeDirection({
   width,
@@ -29,252 +30,289 @@ export function getResizeDirection({
   affectsX,
   affectsY,
 }: GetResizeDirectionParams) {
-  const deltaWidth = width - prevWidth;
-  const deltaHeight = height - prevHeight;
+  const deltaWidth = width - prevWidth; // 计算宽度变化量
+  const deltaHeight = height - prevHeight; // 计算高度变化量
 
-  const direction = [deltaWidth > 0 ? 1 : deltaWidth < 0 ? -1 : 0, deltaHeight > 0 ? 1 : deltaHeight < 0 ? -1 : 0];
+  const direction = [deltaWidth > 0 ? 1 : deltaWidth < 0 ? -1 : 0, deltaHeight > 0 ? 1 : deltaHeight < 0 ? -1 : 0]; // 计算方向数组
 
   if (deltaWidth && affectsX) {
-    direction[0] = direction[0] * -1;
+    // 如果宽度有变化且影响X轴
+    direction[0] = direction[0] * -1; // 反转X轴方向
   }
 
   if (deltaHeight && affectsY) {
-    direction[1] = direction[1] * -1;
+    // 如果高度有变化且影响Y轴
+    direction[1] = direction[1] * -1; // 反转Y轴方向
   }
-  return direction;
+  return direction; // 返回方向数组
 }
 
 /**
- * Parses the control position that is being dragged to dimensions that are being resized
- * @param controlPosition - position of the control that is being dragged
- * @returns isHorizontal, isVertical, affectsX, affectsY,
+ * 解析被拖动的控制位置到正在调整大小的尺寸
+ * @param controlPosition - 被拖动的控制的位置
+ * @returns isHorizontal, isVertical, affectsX, affectsY
  */
 export function getControlDirection(controlPosition: ControlPosition) {
-  const isHorizontal = controlPosition.includes('right') || controlPosition.includes('left');
-  const isVertical = controlPosition.includes('bottom') || controlPosition.includes('top');
-  const affectsX = controlPosition.includes('left');
-  const affectsY = controlPosition.includes('top');
+  const isHorizontal = controlPosition.includes('right') || controlPosition.includes('left'); // 是否是水平方向
+  const isVertical = controlPosition.includes('bottom') || controlPosition.includes('top'); // 是否是垂直方向
+  const affectsX = controlPosition.includes('left'); // 是否影响X轴
+  const affectsY = controlPosition.includes('top'); // 是否影响Y轴
 
   return {
-    isHorizontal,
-    isVertical,
-    affectsX,
-    affectsY,
+    isHorizontal, // 水平方向
+    isVertical, // 垂直方向
+    affectsX, // 影响X轴
+    affectsY, // 影响Y轴
   };
 }
 
 type PrevValues = {
-  width: number;
-  height: number;
-  x: number;
-  y: number;
+  // 前一个值类型
+  width: number; // 宽度
+  height: number; // 高度
+  x: number; // x坐标
+  y: number; // y坐标
 };
 
 type StartValues = PrevValues & {
-  pointerX: number;
-  pointerY: number;
-  aspectRatio: number;
+  // 开始值类型，继承前一个值类型
+  pointerX: number; // 指针X坐标
+  pointerY: number; // 指针Y坐标
+  aspectRatio: number; // 宽高比
 };
 
 function getLowerExtentClamp(lowerExtent: number, lowerBound: number) {
-  return Math.max(0, lowerBound - lowerExtent);
+  // 获取下限约束
+  return Math.max(0, lowerBound - lowerExtent); // 返回0和下限与下界之差中的较大值
 }
 
 function getUpperExtentClamp(upperExtent: number, upperBound: number) {
-  return Math.max(0, upperExtent - upperBound);
+  // 获取上限约束
+  return Math.max(0, upperExtent - upperBound); // 返回0和上限与上界之差中的较大值
 }
 
 function getSizeClamp(size: number, minSize: number, maxSize: number) {
-  return Math.max(0, minSize - size, size - maxSize);
+  // 获取大小约束
+  return Math.max(0, minSize - size, size - maxSize); // 返回0、最小大小与大小之差、大小与最大大小之差中的最大值
 }
 
 function xor(a: boolean, b: boolean) {
-  return a ? !b : b;
+  // 异或函数
+  return a ? !b : b; // 如果a为真，返回b的否定；否则返回b
 }
 
 /**
- * Calculates new width & height and x & y of node after resize based on pointer position
- * @description - Buckle up, this is a chunky one... If you want to determine the new dimensions of a node after a resize,
- * you have to account for all possible restrictions: min/max width/height of the node, the maximum extent the node is allowed
- * to move in (in this case: resize into) determined by the parent node, the minimal extent determined by child nodes
- * with expandParent or extent: 'parent' set and oh yeah, these things also have to work with keepAspectRatio!
- * The way this is done is by determining how much each of these restricting actually restricts the resize and then applying the
- * strongest restriction. Because the resize affects x, y and width, height and width, height of a opposing side with keepAspectRatio,
- * the resize amount is always kept in distX & distY amount (the distance in mouse movement)
- * Instead of clamping each value, we first calculate the biggest 'clamp' (for the lack of a better name) and then apply it to all values.
- * To complicate things nodeOrigin has to be taken into account as well. This is done by offsetting the nodes as if their origin is [0, 0],
- * then calculating the restrictions as usual
- * @param startValues - starting values of resize
- * @param controlDirection - dimensions affected by the resize
- * @param pointerPosition - the current pointer position corrected for snapping
- * @param boundaries - minimum and maximum dimensions of the node
- * @param keepAspectRatio - prevent changes of asprect ratio
- * @returns x, y, width and height of the node after resize
+ * 基于指针位置计算节点调整大小后的新宽度、高度和x、y坐标
+ * @description - 系好安全带，这是个很复杂的函数... 如果你想确定节点调整大小后的新尺寸，
+ * 你必须考虑所有可能的限制：节点的最小/最大宽度/高度，节点被允许移动（在这种情况下：调整大小）的最大范围，
+ * 由父节点确定的，由设置了expandParent或extent: 'parent'的子节点确定的最小范围，哦，这些还必须与keepAspectRatio一起工作！
+ * 实现方式是通过确定每个限制实际限制调整大小的程度，然后应用最强的限制。因为调整大小会影响x、y和宽度、高度，以及保持宽高比时对侧的宽度、高度，
+ * 所以调整大小量始终保持在distX和distY量中（鼠标移动的距离）
+ * 我们不是对每个值进行约束，而是首先计算最大的"约束"（因为没有更好的名称），然后将其应用于所有值。
+ * 复杂的是，nodeOrigin也必须考虑在内。这是通过偏移节点，就好像它们的原点是[0, 0]，然后照常计算限制来完成的
+ * @param startValues - 调整大小的起始值
+ * @param controlDirection - 受调整大小影响的维度
+ * @param pointerPosition - 经过对齐校正的当前指针位置
+ * @param boundaries - 节点的最小和最大尺寸
+ * @param keepAspectRatio - 防止宽高比变化
+ * @returns 调整大小后节点的x、y、宽度和高度
  */
 export function getDimensionsAfterResize(
-  startValues: StartValues,
-  controlDirection: ReturnType<typeof getControlDirection>,
-  pointerPosition: ReturnType<typeof getPointerPosition>,
-  boundaries: { minWidth: number; maxWidth: number; minHeight: number; maxHeight: number },
-  keepAspectRatio: boolean,
-  nodeOrigin: NodeOrigin,
-  extent?: CoordinateExtent,
-  childExtent?: CoordinateExtent
+  startValues: StartValues, // 起始值
+  controlDirection: ReturnType<typeof getControlDirection>, // 控制方向
+  pointerPosition: ReturnType<typeof getPointerPosition>, // 指针位置
+  boundaries: { minWidth: number; maxWidth: number; minHeight: number; maxHeight: number }, // 边界
+  keepAspectRatio: boolean, // 是否保持宽高比
+  nodeOrigin: NodeOrigin, // 节点原点
+  extent?: CoordinateExtent, // 可选的范围
+  childExtent?: CoordinateExtent // 可选的子节点范围
 ) {
-  let { affectsX, affectsY } = controlDirection;
-  const { isHorizontal, isVertical } = controlDirection;
-  const isDiagonal = isHorizontal && isVertical;
+  let { affectsX, affectsY } = controlDirection; // 解构控制方向
+  const { isHorizontal, isVertical } = controlDirection; // 解构控制方向
+  const isDiagonal = isHorizontal && isVertical; // 是否是对角线方向
 
-  const { xSnapped, ySnapped } = pointerPosition;
-  const { minWidth, maxWidth, minHeight, maxHeight } = boundaries;
+  const { xSnapped, ySnapped } = pointerPosition; // 解构指针位置
+  const { minWidth, maxWidth, minHeight, maxHeight } = boundaries; // 解构边界
 
-  const { x: startX, y: startY, width: startWidth, height: startHeight, aspectRatio } = startValues;
-  let distX = Math.floor(isHorizontal ? xSnapped - startValues.pointerX : 0);
-  let distY = Math.floor(isVertical ? ySnapped - startValues.pointerY : 0);
+  const { x: startX, y: startY, width: startWidth, height: startHeight, aspectRatio } = startValues; // 解构起始值
+  let distX = Math.floor(isHorizontal ? xSnapped - startValues.pointerX : 0); // 计算X方向移动距离
+  let distY = Math.floor(isVertical ? ySnapped - startValues.pointerY : 0); // 计算Y方向移动距离
 
-  const newWidth = startWidth + (affectsX ? -distX : distX);
-  const newHeight = startHeight + (affectsY ? -distY : distY);
+  const newWidth = startWidth + (affectsX ? -distX : distX); // 计算新宽度
+  const newHeight = startHeight + (affectsY ? -distY : distY); // 计算新高度
 
-  const originOffsetX = -nodeOrigin[0] * startWidth;
-  const originOffsetY = -nodeOrigin[1] * startHeight;
+  const originOffsetX = -nodeOrigin[0] * startWidth; // 计算原点X偏移
+  const originOffsetY = -nodeOrigin[1] * startHeight; // 计算原点Y偏移
 
-  // Check if maxWidth, minWWidth, maxHeight, minHeight are restricting the resize
-  let clampX = getSizeClamp(newWidth, minWidth, maxWidth);
-  let clampY = getSizeClamp(newHeight, minHeight, maxHeight);
+  // 检查maxWidth、minWidth、maxHeight、minHeight是否限制调整大小
+  let clampX = getSizeClamp(newWidth, minWidth, maxWidth); // 获取X方向约束
+  let clampY = getSizeClamp(newHeight, minHeight, maxHeight); // 获取Y方向约束
 
-  // Check if extent is restricting the resize
+  // 检查范围是否限制调整大小
   if (extent) {
-    let xExtentClamp = 0;
-    let yExtentClamp = 0;
+    // 如果存在范围
+    let xExtentClamp = 0; // 初始化X范围约束
+    let yExtentClamp = 0; // 初始化Y范围约束
     if (affectsX && distX < 0) {
-      xExtentClamp = getLowerExtentClamp(startX + distX + originOffsetX, extent[0][0]);
+      // 如果影响X轴且X方向移动距离小于0
+      xExtentClamp = getLowerExtentClamp(startX + distX + originOffsetX, extent[0][0]); // 获取X下限约束
     } else if (!affectsX && distX > 0) {
-      xExtentClamp = getUpperExtentClamp(startX + newWidth + originOffsetX, extent[1][0]);
+      // 如果不影响X轴且X方向移动距离大于0
+      xExtentClamp = getUpperExtentClamp(startX + newWidth + originOffsetX, extent[1][0]); // 获取X上限约束
     }
 
     if (affectsY && distY < 0) {
-      yExtentClamp = getLowerExtentClamp(startY + distY + originOffsetY, extent[0][1]);
+      // 如果影响Y轴且Y方向移动距离小于0
+      yExtentClamp = getLowerExtentClamp(startY + distY + originOffsetY, extent[0][1]); // 获取Y下限约束
     } else if (!affectsY && distY > 0) {
-      yExtentClamp = getUpperExtentClamp(startY + newHeight + originOffsetY, extent[1][1]);
+      // 如果不影响Y轴且Y方向移动距离大于0
+      yExtentClamp = getUpperExtentClamp(startY + newHeight + originOffsetY, extent[1][1]); // 获取Y上限约束
     }
 
-    clampX = Math.max(clampX, xExtentClamp);
-    clampY = Math.max(clampY, yExtentClamp);
+    clampX = Math.max(clampX, xExtentClamp); // 更新X方向约束
+    clampY = Math.max(clampY, yExtentClamp); // 更新Y方向约束
   }
 
-  // Check if the child extent is restricting the resize
+  // 检查子节点范围是否限制调整大小
   if (childExtent) {
-    let xExtentClamp = 0;
-    let yExtentClamp = 0;
+    // 如果存在子节点范围
+    let xExtentClamp = 0; // 初始化X范围约束
+    let yExtentClamp = 0; // 初始化Y范围约束
     if (affectsX && distX > 0) {
-      xExtentClamp = getUpperExtentClamp(startX + distX, childExtent[0][0]);
+      // 如果影响X轴且X方向移动距离大于0
+      xExtentClamp = getUpperExtentClamp(startX + distX, childExtent[0][0]); // 获取X上限约束
     } else if (!affectsX && distX < 0) {
-      xExtentClamp = getLowerExtentClamp(startX + newWidth, childExtent[1][0]);
+      // 如果不影响X轴且X方向移动距离小于0
+      xExtentClamp = getLowerExtentClamp(startX + newWidth, childExtent[1][0]); // 获取X下限约束
     }
 
     if (affectsY && distY > 0) {
-      yExtentClamp = getUpperExtentClamp(startY + distY, childExtent[0][1]);
+      // 如果影响Y轴且Y方向移动距离大于0
+      yExtentClamp = getUpperExtentClamp(startY + distY, childExtent[0][1]); // 获取Y上限约束
     } else if (!affectsY && distY < 0) {
-      yExtentClamp = getLowerExtentClamp(startY + newHeight, childExtent[1][1]);
+      // 如果不影响Y轴且Y方向移动距离小于0
+      yExtentClamp = getLowerExtentClamp(startY + newHeight, childExtent[1][1]); // 获取Y下限约束
     }
 
-    clampX = Math.max(clampX, xExtentClamp);
-    clampY = Math.max(clampY, yExtentClamp);
+    clampX = Math.max(clampX, xExtentClamp); // 更新X方向约束
+    clampY = Math.max(clampY, yExtentClamp); // 更新Y方向约束
   }
 
-  // Check if the aspect ratio resizing of the other side is restricting the resize
+  // 检查另一侧的宽高比调整是否限制调整大小
   if (keepAspectRatio) {
+    // 如果保持宽高比
     if (isHorizontal) {
-      // Check if the max dimensions might be restricting the resize
-      const aspectHeightClamp = getSizeClamp(newWidth / aspectRatio, minHeight, maxHeight) * aspectRatio;
-      clampX = Math.max(clampX, aspectHeightClamp);
+      // 如果是水平方向
+      // 检查最大尺寸是否可能限制调整大小
+      const aspectHeightClamp = getSizeClamp(newWidth / aspectRatio, minHeight, maxHeight) * aspectRatio; // 获取基于宽高比的高度约束
+      clampX = Math.max(clampX, aspectHeightClamp); // 更新X方向约束
 
-      // Check if the extent is restricting the resize
+      // 检查范围是否限制调整大小
       if (extent) {
-        let aspectExtentClamp = 0;
+        // 如果存在范围
+        let aspectExtentClamp = 0; // 初始化宽高比范围约束
         if ((!affectsX && !affectsY) || (affectsX && !affectsY && isDiagonal)) {
+          // 如果不影响X轴且不影响Y轴或影响X轴且不影响Y轴且是对角线方向
           aspectExtentClamp =
-            getUpperExtentClamp(startY + originOffsetY + newWidth / aspectRatio, extent[1][1]) * aspectRatio;
+            getUpperExtentClamp(startY + originOffsetY + newWidth / aspectRatio, extent[1][1]) * aspectRatio; // 获取上限约束
         } else {
+          // 否则
           aspectExtentClamp =
             getLowerExtentClamp(startY + originOffsetY + (affectsX ? distX : -distX) / aspectRatio, extent[0][1]) *
-            aspectRatio;
+            aspectRatio; // 获取下限约束
         }
-        clampX = Math.max(clampX, aspectExtentClamp);
+        clampX = Math.max(clampX, aspectExtentClamp); // 更新X方向约束
       }
 
-      // Check if the child extent is restricting the resize
+      // 检查子节点范围是否限制调整大小
       if (childExtent) {
-        let aspectExtentClamp = 0;
+        // 如果存在子节点范围
+        let aspectExtentClamp = 0; // 初始化宽高比范围约束
         if ((!affectsX && !affectsY) || (affectsX && !affectsY && isDiagonal)) {
-          aspectExtentClamp = getLowerExtentClamp(startY + newWidth / aspectRatio, childExtent[1][1]) * aspectRatio;
+          // 如果不影响X轴且不影响Y轴或影响X轴且不影响Y轴且是对角线方向
+          aspectExtentClamp = getLowerExtentClamp(startY + newWidth / aspectRatio, childExtent[1][1]) * aspectRatio; // 获取下限约束
         } else {
+          // 否则
           aspectExtentClamp =
-            getUpperExtentClamp(startY + (affectsX ? distX : -distX) / aspectRatio, childExtent[0][1]) * aspectRatio;
+            getUpperExtentClamp(startY + (affectsX ? distX : -distX) / aspectRatio, childExtent[0][1]) * aspectRatio; // 获取上限约束
         }
-        clampX = Math.max(clampX, aspectExtentClamp);
+        clampX = Math.max(clampX, aspectExtentClamp); // 更新X方向约束
       }
     }
 
-    // Do the same thing for vertical resizing
+    // 对垂直调整进行相同操作
     if (isVertical) {
-      const aspectWidthClamp = getSizeClamp(newHeight * aspectRatio, minWidth, maxWidth) / aspectRatio;
-      clampY = Math.max(clampY, aspectWidthClamp);
+      // 如果是垂直方向
+      const aspectWidthClamp = getSizeClamp(newHeight * aspectRatio, minWidth, maxWidth) / aspectRatio; // 获取基于宽高比的宽度约束
+      clampY = Math.max(clampY, aspectWidthClamp); // 更新Y方向约束
 
       if (extent) {
-        let aspectExtentClamp = 0;
+        // 如果存在范围
+        let aspectExtentClamp = 0; // 初始化宽高比范围约束
         if ((!affectsX && !affectsY) || (affectsY && !affectsX && isDiagonal)) {
+          // 如果不影响X轴且不影响Y轴或影响Y轴且不影响X轴且是对角线方向
           aspectExtentClamp =
-            getUpperExtentClamp(startX + newHeight * aspectRatio + originOffsetX, extent[1][0]) / aspectRatio;
+            getUpperExtentClamp(startX + newHeight * aspectRatio + originOffsetX, extent[1][0]) / aspectRatio; // 获取上限约束
         } else {
+          // 否则
           aspectExtentClamp =
             getLowerExtentClamp(startX + (affectsY ? distY : -distY) * aspectRatio + originOffsetX, extent[0][0]) /
-            aspectRatio;
+            aspectRatio; // 获取下限约束
         }
-        clampY = Math.max(clampY, aspectExtentClamp);
+        clampY = Math.max(clampY, aspectExtentClamp); // 更新Y方向约束
       }
 
       if (childExtent) {
-        let aspectExtentClamp = 0;
+        // 如果存在子节点范围
+        let aspectExtentClamp = 0; // 初始化宽高比范围约束
         if ((!affectsX && !affectsY) || (affectsY && !affectsX && isDiagonal)) {
-          aspectExtentClamp = getLowerExtentClamp(startX + newHeight * aspectRatio, childExtent[1][0]) / aspectRatio;
+          // 如果不影响X轴且不影响Y轴或影响Y轴且不影响X轴且是对角线方向
+          aspectExtentClamp = getLowerExtentClamp(startX + newHeight * aspectRatio, childExtent[1][0]) / aspectRatio; // 获取下限约束
         } else {
+          // 否则
           aspectExtentClamp =
-            getUpperExtentClamp(startX + (affectsY ? distY : -distY) * aspectRatio, childExtent[0][0]) / aspectRatio;
+            getUpperExtentClamp(startX + (affectsY ? distY : -distY) * aspectRatio, childExtent[0][0]) / aspectRatio; // 获取上限约束
         }
-        clampY = Math.max(clampY, aspectExtentClamp);
+        clampY = Math.max(clampY, aspectExtentClamp); // 更新Y方向约束
       }
     }
   }
 
-  distY = distY + (distY < 0 ? clampY : -clampY);
-  distX = distX + (distX < 0 ? clampX : -clampX);
+  distY = distY + (distY < 0 ? clampY : -clampY); // 应用Y方向约束
+  distX = distX + (distX < 0 ? clampX : -clampX); // 应用X方向约束
 
   if (keepAspectRatio) {
+    // 如果保持宽高比
     if (isDiagonal) {
+      // 如果是对角线方向
       if (newWidth > newHeight * aspectRatio) {
-        distY = (xor(affectsX, affectsY) ? -distX : distX) / aspectRatio;
+        // 如果新宽度大于新高度乘以宽高比
+        distY = (xor(affectsX, affectsY) ? -distX : distX) / aspectRatio; // 计算Y方向移动距离
       } else {
-        distX = (xor(affectsX, affectsY) ? -distY : distY) * aspectRatio;
+        // 否则
+        distX = (xor(affectsX, affectsY) ? -distY : distY) * aspectRatio; // 计算X方向移动距离
       }
     } else {
+      // 否则
       if (isHorizontal) {
-        distY = distX / aspectRatio;
-        affectsY = affectsX;
+        // 如果是水平方向
+        distY = distX / aspectRatio; // 计算Y方向移动距离
+        affectsY = affectsX; // 设置影响Y轴
       } else {
-        distX = distY * aspectRatio;
-        affectsX = affectsY;
+        // 否则
+        distX = distY * aspectRatio; // 计算X方向移动距离
+        affectsX = affectsY; // 设置影响X轴
       }
     }
   }
 
-  const x = affectsX ? startX + distX : startX;
-  const y = affectsY ? startY + distY : startY;
+  const x = affectsX ? startX + distX : startX; // 计算X坐标
+  const y = affectsY ? startY + distY : startY; // 计算Y坐标
 
   return {
-    width: startWidth + (affectsX ? -distX : distX),
-    height: startHeight + (affectsY ? -distY : distY),
-    x: nodeOrigin[0] * distX * (!affectsX ? 1 : -1) + x,
-    y: nodeOrigin[1] * distY * (!affectsY ? 1 : -1) + y,
+    width: startWidth + (affectsX ? -distX : distX), // 返回宽度
+    height: startHeight + (affectsY ? -distY : distY), // 返回高度
+    x: nodeOrigin[0] * distX * (!affectsX ? 1 : -1) + x, // 返回X坐标，考虑原点偏移
+    y: nodeOrigin[1] * distY * (!affectsY ? 1 : -1) + y, // 返回Y坐标，考虑原点偏移
   };
 }

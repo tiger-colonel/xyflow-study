@@ -49,6 +49,13 @@ export const isEdgeBase = <EdgeType extends EdgeBase = EdgeBase>(element: any): 
 export const isNodeBase = <NodeType extends NodeBase = NodeBase>(element: any): element is NodeType =>
   'id' in element && 'position' in element && !('source' in element) && !('target' in element);
 
+/**
+ * 测试一个对象是否是内部节点类型
+ * @public
+ * @remarks 在TypeScript中，这是一个类型保护，如果返回true，它将把传入的元素类型缩小为InternalNodeBase
+ * @param element - 要测试的元素
+ * @returns 一个布尔值，指示元素是否为内部节点类型
+ */
 export const isInternalNodeBase = <NodeType extends InternalNodeBase = InternalNodeBase>(
   element: any
 ): element is NodeType => 'id' in element && 'internals' in element && !('source' in element) && !('target' in element);
@@ -134,6 +141,13 @@ export const getIncomers = <NodeType extends NodeBase = NodeBase, EdgeType exten
   return nodes.filter((n) => incomersIds.has(n.id));
 };
 
+/**
+ * 计算节点位置，考虑节点原点偏移
+ * @public
+ * @param node - 要计算位置的节点
+ * @param nodeOrigin - 节点的原点坐标，默认为[0, 0]（左上角）
+ * @returns 考虑了原点偏移后的节点位置
+ */
 export const getNodePositionWithOrigin = (node: NodeBase, nodeOrigin: NodeOrigin = [0, 0]): XYPosition => {
   const { width, height } = getNodeDimensions(node);
   const origin = node.origin ?? nodeOrigin;
@@ -251,6 +265,16 @@ export const getInternalNodesBounds = <NodeType extends InternalNodeBase | NodeD
   return boxToRect(box);
 };
 
+/**
+ * 获取在指定矩形区域内的节点
+ * @internal
+ * @param nodes - 所有节点的Map集合
+ * @param rect - 要检查的矩形区域
+ * @param transform - 画布的变换[x偏移, y偏移, 缩放比例]
+ * @param partially - 如果设为true，则部分在区域内的节点也会被包含
+ * @param excludeNonSelectableNodes - 是否排除不可选择的节点
+ * @returns 在指定区域内的节点数组
+ */
 export const getNodesInside = <NodeType extends NodeBase = NodeBase>(
   nodes: Map<string, InternalNodeBase<NodeType>>,
   rect: Rect,
@@ -329,6 +353,13 @@ export const getConnectedEdges = <NodeType extends NodeBase = NodeBase, EdgeType
   return edges.filter((edge) => nodeIds.has(edge.source) || nodeIds.has(edge.target));
 };
 
+/**
+ * 根据选项过滤出符合适配视图条件的节点
+ * @internal
+ * @param nodeLookup - 所有节点的查找表
+ * @param options - 过滤选项，可以指定特定节点和是否包含隐藏节点
+ * @returns 过滤后的节点查找表，只包含将用于适配视图的节点
+ */
 export function getFitViewNodes<
   Params extends NodeLookup<InternalNodeBase<NodeBase>>,
   Options extends FitViewOptionsBase<NodeBase>
@@ -347,6 +378,13 @@ export function getFitViewNodes<
   return fitViewNodes;
 }
 
+/**
+ * 调整视图以适配指定的节点
+ * @internal
+ * @param params - 包含节点、视口尺寸和缩放限制的参数
+ * @param options - 适配视图的选项，如填充、动画持续时间等
+ * @returns Promise，解析为是否成功适配视图
+ */
 export async function fitView<Params extends FitViewParamsBase<NodeBase>, Options extends FitViewOptionsBase<NodeBase>>(
   { nodes, width, height, panZoom, minZoom, maxZoom }: Params,
   options?: Omit<Options, 'nodes' | 'includeHiddenNodes'>
