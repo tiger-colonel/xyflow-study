@@ -9,23 +9,22 @@ import type { Edge, Node, ReactFlowState } from '../types';
 const zustandErrorMessage = errorMessages['error001']();
 
 /**
- * This hook can be used to subscribe to internal state changes of the React Flow
- * component. The `useStore` hook is re-exported from the [Zustand](https://github.com/pmndrs/zustand)
- * state management library, so you should check out their docs for more details.
+ * 这个钩子函数可以用于订阅 React Flow 组件的内部状态变化。`useStore`
+ * 钩子是从 [Zustand](https://github.com/pmndrs/zustand) 状态管理库
+ * 再导出的，所以你可以查阅他们的文档获取更多详细信息。
  *
  * @public
- * @param selector
- * @param equalityFn
- * @returns The selected state slice
+ * @param selector 选择器函数
+ * @param equalityFn 相等性比较函数
+ * @returns 选中的状态切片
  *
  * @example
  * ```ts
  * const nodes = useStore((state) => state.nodes);
  * ```
  *
- * @remarks This hook should only be used if there is no other way to access the internal
- * state. For many of the common use cases, there are dedicated hooks available
- * such as {@link useReactFlow}, {@link useViewport}, etc.
+ * @remarks 只有在没有其他方式访问内部状态时，才应该使用此钩子。对于许多常见
+ * 用例，已经有专门的钩子可用，如 {@link useReactFlow}、{@link useViewport} 等。
  */
 function useStore<StateSlice = unknown>(
   selector: (state: ReactFlowState) => StateSlice,
@@ -41,18 +40,18 @@ function useStore<StateSlice = unknown>(
 }
 
 /**
- * In some cases, you might need to access the store directly. This hook returns the store object which can be used on demand to access the state or dispatch actions.
+ * 在某些情况下，你可能需要直接访问存储。这个钩子返回存储对象，
+ * 可以按需使用它来访问状态或者分发动作。
  *
- * @returns The store object
+ * @returns 存储对象
  *
  * @example
  * ```ts
  * const store = useStoreApi();
  * ```
  *
- * @remarks This hook should only be used if there is no other way to access the internal
- * state. For many of the common use cases, there are dedicated hooks available
- * such as {@link useReactFlow}, {@link useViewport}, etc.
+ * @remarks 只有在没有其他方式访问内部状态时，才应该使用此钩子。对于许多常见
+ * 用例，已经有专门的钩子可用，如 {@link useReactFlow}、{@link useViewport} 等。
  */
 function useStoreApi<NodeType extends Node = Node, EdgeType extends Edge = Edge>() {
   const store = useContext(StoreContext) as UseBoundStoreWithEqualityFn<

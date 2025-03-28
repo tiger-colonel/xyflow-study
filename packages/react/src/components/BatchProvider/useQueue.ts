@@ -4,34 +4,30 @@ import { useIsomorphicLayoutEffect } from '../../hooks/useIsomorphicLayoutEffect
 import { Queue, QueueItem } from './types';
 
 /**
- * This hook returns a queue that can be used to batch updates.
+ * 这个 hook 返回一个可用于批量更新的队列。
  *
- * @param runQueue - a function that gets called when the queue is flushed
+ * @param runQueue - 当队列被刷新时调用的函数
  * @internal
  *
- * @returns a Queue object
+ * @returns 一个 Queue 对象
  */
 export function useQueue<T>(runQueue: (items: QueueItem<T>[]) => void) {
   /*
-   * Because we're using a ref above, we need some way to let React know when to
-   * actually process the queue. We increment this number any time we mutate the
-   * queue, creating a new state to trigger the layout effect below.
-   * Using a boolean dirty flag here instead would lead to issues related to
-   * automatic batching. (https://github.com/xyflow/xyflow/issues/4779)
+   * 因为我们上面使用了引用，所以需要某种方式让 React 知道何时实际处理队列。
+   * 每当我们修改队列时，我们都会增加这个数字，创建一个新的状态来触发下面的布局效果。
+   * 在这里使用布尔型的脏标志会导致自动批处理相关的问题。(https://github.com/xyflow/xyflow/issues/4779)
    */
   const [serial, setSerial] = useState(BigInt(0));
 
   /*
-   * A reference of all the batched updates to process before the next render. We
-   * want a reference here so multiple synchronous calls to `setNodes` etc can be
-   * batched together.
+   * 在下一次渲染之前需要处理的所有批量更新的引用。我们在这里需要一个引用，
+   * 这样对 `setNodes` 等的多个同步调用可以一起批处理。
    */
-  const [queue] = useState(() => createQueue<T>(() => setSerial(n => n + BigInt(1))));
+  const [queue] = useState(() => createQueue<T>(() => setSerial((n) => n + BigInt(1))));
 
   /*
-   * Layout effects are guaranteed to run before the next render which means we
-   * shouldn't run into any issues with stale state or weird issues that come from
-   * rendering things one frame later than expected (we used to use `setTimeout`).
+   * 布局效果保证在下一次渲染之前运行，这意味着我们不应该遇到陈旧状态的问题，
+   * 或者由于比预期晚一帧渲染而导致的奇怪问题（我们过去使用 `setTimeout`）。
    */
   useIsomorphicLayoutEffect(() => {
     const queueItems = queue.get();
