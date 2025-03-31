@@ -283,6 +283,7 @@ export const getNodesInside = <NodeType extends NodeBase = NodeBase>(
   // 如果你想关注节点的"selectable"属性，请设置excludeNonSelectableNodes
   excludeNonSelectableNodes = false
 ): InternalNodeBase<NodeType>[] => {
+  // 从屏幕坐标转为画布坐标
   const paneRect = {
     ...pointToRendererPoint(rect, [tx, ty, tScale]),
     width: rect.width / tScale,

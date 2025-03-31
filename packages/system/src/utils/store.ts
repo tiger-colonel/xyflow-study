@@ -80,6 +80,7 @@ type UpdateNodesOptions<NodeType extends NodeBase> = {
   checkEquality?: boolean;
 };
 
+// 对新节点进行处理，转换为内部表示格式
 export function adoptUserNodes<NodeType extends NodeBase>(
   nodes: NodeType[],
   nodeLookup: NodeLookup<InternalNodeBase<NodeType>>,
@@ -94,6 +95,7 @@ export function adoptUserNodes<NodeType extends NodeBase>(
   nodeLookup.clear();
   parentLookup.clear();
 
+  // 处理每个用户节点
   for (const userNode of nodes) {
     let internalNode = tmpLookup.get(userNode.id);
 
@@ -104,6 +106,7 @@ export function adoptUserNodes<NodeType extends NodeBase>(
       const extent = isCoordinateExtent(userNode.extent) ? userNode.extent : _options.nodeExtent;
       const clampedPosition = clampPosition(positionWithOrigin, extent, getNodeDimensions(userNode));
 
+      // / 创建或更新内部节点
       internalNode = {
         ..._options.defaults,
         ...userNode,
@@ -123,6 +126,7 @@ export function adoptUserNodes<NodeType extends NodeBase>(
       nodeLookup.set(userNode.id, internalNode);
     }
 
+    // 计算节点位置和处理父子关系
     if (userNode.parentId) {
       updateChildNode(internalNode, nodeLookup, parentLookup, options);
     }
@@ -198,6 +202,7 @@ function calculateChildXYZ<NodeType extends NodeBase>(
   const { x: parentX, y: parentY } = parentNode.internals.positionAbsolute;
   const childDimensions = getNodeDimensions(childNode);
   const positionWithOrigin = getNodePositionWithOrigin(childNode, nodeOrigin);
+  // 计算相对于父节点的绝对位置
   const clampedPosition = isCoordinateExtent(childNode.extent)
     ? clampPosition(positionWithOrigin, childNode.extent, childDimensions)
     : positionWithOrigin;

@@ -1,8 +1,7 @@
-/*
- * This component helps us to update the store with the values coming from the user.
- * We distinguish between values we can update directly with `useDirectStoreUpdater` (like `snapGrid`)
- * and values that have a dedicated setter function in the store (like `setNodes`).
- */
+// 该组件帮助我们根据用户传入的值更新存储（store）。
+// 我们区分两种更新方式：
+// 可直接通过 useDirectStoreUpdater 更新的值（如 snapGrid）
+// 需调用 store 中专用 setter 函数的值（如 setNodes）。
 import { useEffect, useRef } from 'react';
 import { shallow } from 'zustand/shallow';
 import { infiniteExtent, type CoordinateExtent } from '@xyflow/system';
@@ -11,7 +10,7 @@ import { useStore, useStoreApi } from '../../hooks/useStore';
 import type { Node, Edge, ReactFlowState, ReactFlowProps, FitViewOptions } from '../../types';
 import { defaultNodeOrigin } from '../../container/ReactFlow/init-values';
 
-// these fields exist in the global store and we need to keep them up to date
+// 这些字段存在于全局存储中，我们需要保持它们的最新状态
 const reactFlowFieldsToTrack = [
   'nodes',
   'edges',
@@ -78,7 +77,7 @@ type StoreUpdaterProps<NodeType extends Node = Node, EdgeType extends Edge = Edg
   rfId: string;
 };
 
-// rfId doesn't exist in ReactFlowProps, but it's one of the fields we want to update
+// rfId 不存在于 ReactFlowProps 中，但它是我们需要更新的字段之一
 const fieldsToTrack = [...reactFlowFieldsToTrack, 'rfId'] as const;
 
 const selector = (s: ReactFlowState) => ({
@@ -95,9 +94,8 @@ const selector = (s: ReactFlowState) => ({
 
 const initPrevValues = {
   /*
-   * these are values that are also passed directly to other components
-   * than the StoreUpdater. We can reduce the number of setStore calls
-   * by setting the same values here as prev fields.
+   * 这些值在 StoreUpdater 中被直接传递给 StoreUpdater 之外的其他组件
+   * 通过在此处将相同值设为 prev 字段，我们可以减少 setStore 的调用次数
    */
   translateExtent: infiniteExtent,
   nodeOrigin: defaultNodeOrigin,
@@ -129,7 +127,7 @@ export function StoreUpdater<NodeType extends Node = Node, EdgeType extends Edge
     setDefaultNodesAndEdges(props.defaultNodes, props.defaultEdges);
 
     return () => {
-      // when we reset the store we also need to reset the previous fields
+      // 当重置 store 时，我们也需要重置之前的字段
       previousFields.current = initPrevValues;
       reset();
     };
@@ -145,7 +143,7 @@ export function StoreUpdater<NodeType extends Node = Node, EdgeType extends Edge
 
         if (fieldValue === previousFieldValue) continue;
         if (typeof props[fieldName] === 'undefined') continue;
-        // Custom handling with dedicated setters for some fields
+        // 部分字段需使用专用的 setter 方法进行自定义处理
         if (fieldName === 'nodes') setNodes(fieldValue as Node[]);
         else if (fieldName === 'edges') setEdges(fieldValue as Edge[]);
         else if (fieldName === 'minZoom') setMinZoom(fieldValue as number);
@@ -162,7 +160,7 @@ export function StoreUpdater<NodeType extends Node = Node, EdgeType extends Edge
 
       previousFields.current = props;
     },
-    // Only re-run the effect if one of the fields we track changes
+    // 仅在所追踪的任一字段发生变化时重新执行该副作用
     fieldsToTrack.map((fieldName) => props[fieldName])
   );
 

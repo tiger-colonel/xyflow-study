@@ -20,7 +20,7 @@ import type { ReactFlowInstance, Node, Edge, InternalNode, ReactFlowState, Gener
 const selector = (s: ReactFlowState) => !!s.panZoom;
 
 /**
- * This hook returns a ReactFlowInstance that can be used to update nodes and edges, manipulate the viewport, or query the current state of the flow.
+ * 该钩子会返回一个 ReactFlowInstance 实例，可用于：1. 更新节点和连线；2. 操作视口； 3. 查询当前流程图状态
  *
  * @public
  * @returns ReactFlowInstance
@@ -62,6 +62,7 @@ export function useReactFlow<NodeType extends Node = Node, EdgeType extends Edge
       store.getState().nodeLookup.get(id) as InternalNode<NodeType>;
 
     const setNodes: GeneralHelpers<NodeType, EdgeType>['setNodes'] = (payload) => {
+      // 更新事件添加到队列
       batchContext.nodeQueue.push(payload as NodeType[]);
     };
 

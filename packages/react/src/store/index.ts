@@ -51,7 +51,6 @@ const createStore = ({
          * setNodes() 仅在响应用户操作时被调用：
          * - 要么是在受控 ReactFlow 设置中更新 `<ReactFlow nodes>` 属性时
          * - 要么是在非受控 ReactFlow 设置中用户调用类似 `reactFlowInstance.setNodes()` 的方法时
-         *
          * 当这种情况发生时，我们会采用用户传递的节点对象，并用与 React Flow 内部操作相关的字段扩展它们。
          */
         adoptUserNodes(nodes, nodeLookup, parentLookup, {

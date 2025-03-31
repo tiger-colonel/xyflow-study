@@ -40,13 +40,16 @@ export function BatchProvider<NodeType extends Node = Node, EdgeType extends Edg
     const { nodes = [], setNodes, hasDefaultNodes, onNodesChange, nodeLookup } = store.getState();
 
     /*
-     * This is essentially an `Array.reduce` in imperative clothing. Processing
-     * this queue is a relatively hot path so we'd like to avoid the overhead of
-     * array methods where we can.
+      这本质上是一个披着命令式外衣的 Array.reduce 操作。
+      由于处理这个队列属于相对高频的操作路径，我们尽可能避免使用数组方法带来的额外开销
      */
     // 初始化下一个节点数组
     let next = nodes;
     // 遍历队列项并应用更新
+    // @NOTE: 所有关于nodes的更新都在queueItems，只需要取最后一次即可。合并了很多更新。
+    // 处理更新函数：支持两种更新方式：
+    // 1. 函数形式：payload(currentNodes) => newNodes
+    // 2. 直接值形式：直接提供新节点数组
     for (const payload of queueItems) {
       // 如果payload是函数，调用它并传入当前节点数组；否则直接使用payload作为新节点数组
       next = typeof payload === 'function' ? payload(next) : payload;
@@ -54,10 +57,10 @@ export function BatchProvider<NodeType extends Node = Node, EdgeType extends Edg
 
     // 根据配置决定如何应用节点更新
     if (hasDefaultNodes) {
-      // 如果使用默认节点管理，直接设置新节点数组
+      // 如果使用默认节点管理，直接设置新节点数组， 【非受控状态】
       setNodes(next);
     } else if (onNodesChange) {
-      // 如果提供了节点变更回调，计算变更差异并调用回调
+      // 如果提供了节点变更回调，计算变更差异并调用回调，【受控状态】
       onNodesChange(
         getElementsDiffChanges({
           items: next,

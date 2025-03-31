@@ -1,8 +1,7 @@
 /*
- * This is a helper component for calling the onSelectionChange listener.
- * It will only be mounted if the user has passed an onSelectionChange listener
- * or is using the useOnSelectionChange hook.
- * @TODO: Now that we have the onNodesChange and on EdgesChange listeners, do we still need this component?
+    这是一个用于调用 onSelectionChange 监听器的辅助组件
+    仅当用户传入了 onSelectionChange 监听器或正在使用 useOnSelectionChange 钩子时才会被挂载
+    @待办：既然现在已有 onNodesChange 和 onEdgesChange 监听器，我们是否仍需要保留该组件？
  */
 import { useEffect } from 'react';
 import { shallow } from 'zustand/shallow';
