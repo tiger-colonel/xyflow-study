@@ -38,17 +38,17 @@ export function createFilter({
       return true;
     }
 
-    // if all interactions are disabled, we prevent all zoom events
+    // 如果禁用了所有交互，我们将阻止所有缩放事件
     if (!panOnDrag && !zoomScroll && !panOnScroll && !zoomOnDoubleClick && !zoomOnPinch) {
       return false;
     }
 
-    // during a selection we prevent all other interactions
+    // 在选择期间，我们阻止所有其他交互。
     if (userSelectionActive) {
       return false;
     }
 
-    // if the target element is inside an element with the nowheel class, we prevent zooming
+    // 如果目标元素位于具有 nowheel 类的元素内，我们将阻止缩放。
     if (isWrappedWithClass(event, noWheelClassName) && event.type === 'wheel') {
       return false;
     }

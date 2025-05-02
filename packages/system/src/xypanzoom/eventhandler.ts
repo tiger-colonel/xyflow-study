@@ -117,9 +117,9 @@ export function createPanOnScrollHandler({
     clearTimeout(zoomPanValues.panScrollTimeout);
 
     /*
-     * for pan on scroll we need to handle the event calls on our own
-     * we can't use the start, zoom and end events from d3-zoom
-     * because start and move gets called on every scroll event and not once at the beginning
+     * 对于滚动平移，我们需要自己处理事件调用
+     * 我们不能使用 d3-zoom 的 start、zoom 和 end 事件
+     * 因为在每次滚动事件中，start 和 move 都会被调用，而不是仅在开始时调用
      */
     if (!zoomPanValues.isPanScrolling) {
       zoomPanValues.isPanScrolling = true;
@@ -141,7 +141,7 @@ export function createPanOnScrollHandler({
 
 export function createZoomOnScrollHandler({ noWheelClassName, preventScrolling, d3ZoomHandler }: ZoomOnScrollParams) {
   return function (this: Element, event: any, d: unknown) {
-    // we still want to enable pinch zooming even if preventScrolling is set to false
+    // 即使将 preventScrolling 设置为 false，我们仍然希望启用捏合缩放功能
     const preventZoom = !preventScrolling && event.type === 'wheel' && !event.ctrlKey;
 
     if (preventZoom || isWrappedWithClass(event, noWheelClassName)) {
@@ -162,7 +162,7 @@ export function createPanZoomStartHandler({ zoomPanValues, onDraggingChange, onP
 
     const viewport = transformToViewport(event.transform);
 
-    // we need to remember it here, because it's always 0 in the "zoom" event
+    // 我们需要在这里记住它，因为在“zoom”事件中它始终为0。
     zoomPanValues.mouseButton = event.sourceEvent?.button || 0;
     zoomPanValues.isZoomingOrPanning = true;
     zoomPanValues.prevViewport = viewport;
@@ -235,7 +235,7 @@ export function createPanZoomEndHandler({
         () => {
           onPanZoomEnd?.(event.sourceEvent as MouseEvent | TouchEvent, viewport);
         },
-        // we need a setTimeout for panOnScroll to supress multiple end events fired during scroll
+        // 我们需要为 panOnScroll 设置一个 setTimeout，以抑制滚动期间触发的多个结束事件。
         panOnScroll ? 150 : 0
       );
     }
